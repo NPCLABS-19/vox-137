@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#242624" />
+    <title>VOX / 137 — Pocket voice machine</title>
+    <meta
+      name="description"
+      content="A playable pocket vocal synthesizer. Sample, shape, sequence and perform in your browser."
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23242624'/%3E%3Cpath d='M7 9l9 15L25 9' fill='none' stroke='%23fa6b36' stroke-width='4'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="./">VOX<span>/</span>137</a
+      ><span class="top-note">POCKET VOICE MACHINE</span
+      ><button class="text-button" id="helpOpen">
+        Field guide <span>?</span>
+      </button>
+    </header>
+    <main>
+      <section class="intro">
+        <div class="eyebrow">INSTRUMENT 001 · BROWSER EDITION</div>
+        <h1>A little machine.<br />A lot to say.</h1>
+        <p>
+          Record a voice. Bend it out of shape.<br />Make something that loops.
+        </p>
+        <div class="intro-actions">
+          <button class="primary" id="audioStart">
+            Enable sound <span>◉</span></button
+          ><span id="audioStatus">Sound starts with your first touch.</span>
+        </div>
+        <div class="quickstart">
+          <b>YOUR FIRST LOOP</b>
+          <p><kbd>PLAY</kbd> Hear the loaded pattern.</p>
+          <p><kbd>SOUND</kbd> + a pad selects a sound.</p>
+          <p><kbd>WRITE</kbd> Turns the pads into steps.</p>
+          <p><kbd>FX</kbd> + a pad transforms the voice.</p>
+          <button class="text-button" id="guideShortcut">
+            All combinations + keyboard keys
+          </button>
+        </div>
+        <div class="session-note">
+          <span class="tiny-light"></span>
+          <span id="saveStatus">Session saved on this device</span>
+        </div>
+      </section>
+      <section class="instrument-wrap" aria-label="Pocket synthesizer">
+        <div class="device">
+          <div class="screw tl"></div>
+          <div class="screw tr"></div>
+          <div class="device-top">
+            <div>
+              <strong>VOX / 137</strong
+              ><small>VOICE SYNTHESIZER & SEQUENCER</small>
+            </div>
+            <div class="mic-grille" title="Built-in browser microphone">
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+          <div class="screen" id="screen">
+            <div class="screen-top">
+              <span id="modeLabel">READY</span
+              ><span><span id="bpmRead">120</span> BPM</span>
+            </div>
+            <div class="screen-main">
+              <div>
+                <span class="screen-caption">SOUND</span
+                ><strong id="soundRead">01</strong>
+              </div>
+              <canvas
+                id="visual"
+                width="240"
+                height="90"
+                aria-label="Animated sound waveform"
+              ></canvas>
+              <div>
+                <span class="screen-caption">PATTERN</span
+                ><strong id="patternRead">01</strong>
+              </div>
+            </div>
+            <div class="screen-bottom">
+              <span id="voiceRead">NEUTRAL</span
+              ><span id="messageRead">PRESS PLAY TO BEGIN</span>
+            </div>
+            <div id="screenSteps" class="screen-steps"></div>
+          </div>
+          <div class="knobs">
+            <div class="knob-unit">
+              <div
+                class="knob"
+                id="knobA"
+                role="slider"
+                tabindex="0"
+                aria-label="Knob A"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="50"
+              >
+                <i></i>
+              </div>
+              <span>A <b id="knobALabel">PITCH</b></span
+              ><output id="knobAValue">0 st</output>
+            </div>
+            <div class="knob-center">
+              <span id="paramBank">PITCH / FORMANT</span
+              ><small>TAP FX TO SWITCH</small>
+            </div>
+            <div class="knob-unit">
+              <div
+                class="knob"
+                id="knobB"
+                role="slider"
+                tabindex="0"
+                aria-label="Knob B"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="50"
+              >
+                <i></i>
+              </div>
+              <span>B <b id="knobBLabel">FORMANT</b></span
+              ><output id="knobBValue">0</output>
+            </div>
+          </div>
+          <div class="control-row">
+            <button data-control="sound">sound<span>S</span></button
+            ><button data-control="pattern">pattern<span>P</span></button
+            ><button data-control="bpm">bpm<span>B</span></button
+            ><button data-control="m">m<span>M</span></button>
+          </div>
+          <div class="pad-area">
+            <div id="pads" class="pads"></div>
+            <div class="pad-annotations">
+              <span>VOICE<br />1 — 8</span><span>EFFECT<br />9 — 16</span>
+            </div>
+          </div>
+          <div class="control-row bottom">
+            <button data-control="record" class="record">
+              <i></i>record<span>R</span></button
+            ><button data-control="fx">fx<span>F</span></button
+            ><button data-control="play" class="play">
+              ▶ play<span>SPACE</span></button
+            ><button data-control="write">write<span>W</span></button>
+          </div>
+          <div class="device-footer">
+            <span>120 SEC / 16 STEPS</span
+            ><button id="lockButton" aria-label="Lock session">
+              ○ UNLOCKED</button
+            ><span id="syncRead">SY0</span>
+          </div>
+          <div class="screw bl"></div>
+          <div class="screw br"></div>
+        </div>
+        <div class="device-caption">
+          <span>HOLD A CONTROL + TAP A PAD</span
+          ><button id="stickyButton" class="text-button" aria-pressed="false">
+            Latch controls: off
+          </button>
+        </div>
+      </section>
+      <aside class="workspace">
+        <div class="workspace-head">
+          <div class="eyebrow">YOUR WORKSPACE</div>
+          <span id="projectName">Untitled session</span>
+        </div>
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-tab="sounds">
+            Sounds</button
+          ><button role="tab" aria-selected="false" data-tab="pattern">
+            Pattern</button
+          ><button role="tab" aria-selected="false" data-tab="session">
+            Session
+          </button>
+        </div>
+        <div id="workspaceContent"></div>
+      </aside>
+    </main>
+    <footer class="page-footer">
+      <span>DESIGNED TO GET LOST IN SOUND.</span
+      ><button class="text-button" id="aboutOpen">About this emulation</button>
+    </footer>
+    <dialog id="guide">
+      <div class="dialog-head">
+        <div>
+          <div class="eyebrow">KEEP THIS CLOSE</div>
+          <h2>Field guide</h2>
+        </div>
+        <button class="close" aria-label="Close field guide">×</button>
+      </div>
+      <div id="guideContent"></div>
+    </dialog>
+    <dialog id="about">
+      <div class="dialog-head">
+        <h2>About VOX / 137</h2>
+        <button class="close" aria-label="Close about">×</button>
+      </div>
+      <p>
+        An independent browser instrument inspired by the PO-137’s documented
+        workflow. It is not affiliated with Teenage Engineering or Adult Swim.
+      </p>
+      <p>
+        All eight voice characters, the drum engine and effects are original Web
+        Audio recreations, not the hardware’s proprietary DSP. Starter sounds
+        are original synthesized material, not Rick and Morty recordings.
+      </p>
+      <p>
+        Audio backup uses VOX’s own format. Hardware backup signals and
+        Microtonic patch transmissions cannot be decoded. Import WAV/audio into
+        vocal slots or the drum bank instead. Audio clock sync is available, but
+        a browser cannot promise hardware-level timing or calibrated voltage.
+      </p>
+      <p>
+        Recordings stay in your browser. Clock alarms require this page to
+        remain open and audio to be enabled. Background tabs can suspend audio
+        or delay timers.
+      </p>
+      <a
+        href="https://teenage.engineering/guides/po-137/en"
+        target="_blank"
+        rel="noreferrer"
+        >Original operating reference</a
+      >
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <input type="file" id="audioFile" accept="audio/*" hidden /><input
+      type="file"
+      id="sessionFile"
+      accept="application/json,.json,.wav,audio/wav"
+      hidden
+    />
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
