@@ -74,6 +74,86 @@
       </section>
       <section class="instrument-wrap" aria-label="Pocket synthesizer">
         <div class="device">
+          <svg
+            class="circuit-board"
+            viewBox="0 0 440 720"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <pattern
+                id="pcb"
+                width="30"
+                height="30"
+                patternUnits="userSpaceOnUse"
+              >
+                <circle cx="4" cy="4" r="1.2" fill="#a3d4ad" opacity=".3" />
+              </pattern>
+            </defs>
+            <rect x="9" y="9" width="422" height="702" rx="17" fill="#143c38" />
+            <rect width="440" height="720" fill="url(#pcb)" />
+            <g fill="none" stroke="#8dba7b" stroke-width="1.5" opacity=".65">
+              <path
+                d="M24 60H100L128 88V630H24M415 34H350V185L320 215V645H412M23 320H70V250H380V460H410M24 500H110L155 545H340V695M28 680H210V420H415M408 100H380V150H30V620H80M55 36V80H320V110H420"
+              />
+              <path
+                d="M40 40V118H160V380H400M400 660H300V350H26M40 610H98V570H280V110H400"
+              />
+            </g>
+            <g fill="#0b151b" stroke="#839ca3" stroke-width="1">
+              <rect x="165" y="315" width="105" height="110" rx="4" />
+              <rect x="335" y="555" width="45" height="80" rx="3" />
+              <rect x="65" y="195" width="45" height="70" rx="3" />
+            </g>
+            <g stroke="#bac0aa" stroke-width="5">
+              <path
+                d="M154 327H165M154 344H165M154 361H165M154 378H165M154 395H165M270 327H282M270 344H282M270 361H282M270 378H282M270 395H282"
+              />
+            </g>
+            <g fill="#263448" stroke="#96abc1" stroke-width="2">
+              <circle cx="37" cy="180" r="11" />
+              <circle cx="395" cy="270" r="10" />
+              <circle cx="45" cy="555" r="13" />
+              <circle cx="385" cy="685" r="13" />
+            </g>
+            <g fill="none" stroke-width="5" stroke-linecap="round">
+              <path
+                d="M20 112C45 10 165 16 218 73S408 40 417 170"
+                stroke="#e98b59"
+              />
+              <path
+                d="M22 225C55 320 25 395 38 486S15 596 113 675"
+                stroke="#67c5d6"
+              />
+              <path
+                d="M418 375C355 436 443 510 393 564S373 653 309 690"
+                stroke="#e4bd57"
+              />
+            </g>
+            <g fill="#cfd7b6">
+              <rect x="20" y="106" width="13" height="18" rx="2" />
+              <rect x="408" y="163" width="14" height="22" rx="2" />
+              <rect x="301" y="680" width="20" height="12" rx="2" />
+            </g>
+            <text
+              x="181"
+              y="363"
+              fill="#7a9099"
+              font-size="10"
+              font-family="monospace"
+            >
+              VOX / DSP
+            </text>
+            <text
+              x="28"
+              y="700"
+              fill="#a6d1b9"
+              font-size="8"
+              font-family="monospace"
+            >
+              CLEAR SHELL · REV 03
+            </text>
+          </svg>
           <div class="screw tl"></div>
           <div class="screw tr"></div>
           <div class="device-top">
@@ -159,7 +239,8 @@
           <div class="pad-area">
             <div id="pads" class="pads"></div>
             <div class="pad-annotations">
-              <span>VOICE<br />1 — 8</span><span>EFFECT<br />9 — 16</span>
+              <span id="padLegendA">VOICE<br />1 — 8</span
+              ><span id="padLegendB">EFFECT<br />9 — 16</span>
             </div>
           </div>
           <div class="control-row bottom">
@@ -227,9 +308,9 @@
         workflow. It is not affiliated with Teenage Engineering or Adult Swim.
       </p>
       <p>
-        All eight voice characters, the drum engine and effects are original Web
-        Audio recreations, not the hardware’s proprietary DSP. Starter sounds
-        are original synthesized material, not Rick and Morty recordings.
+        All sixteen voice characters, the drum engine and effects are original
+        Web Audio recreations, not the hardware’s proprietary DSP. Starter
+        sounds are original synthesized material, not Rick and Morty recordings.
       </p>
       <p>
         Audio backup uses VOX’s own format. Hardware backup signals and

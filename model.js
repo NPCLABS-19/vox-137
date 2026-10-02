@@ -6,7 +6,15 @@ export const VOICES = [
   "robot",
   "fifth",
   "vocoder",
-  "synth",
+  "chorus",
+  "chipmunk",
+  "giant",
+  "telephone",
+  "whisper",
+  "megaphone",
+  "alien",
+  "double",
+  "underwater",
 ];
 export const EFFECTS = [
   "stutter sweep",
@@ -17,6 +25,20 @@ export const EFFECTS = [
   "retrigger pattern",
   "reverse",
   "no effect",
+  "loop 16",
+  "loop 12",
+  "loop short",
+  "loop shorter",
+  "unison",
+  "unison low",
+  "octave up",
+  "octave down",
+  "stutter 3",
+  "scratch",
+  "scratch fast",
+];
+export const KO_EFFECTS = [
+  17, 18, 19, 20, 21, 22, 23, 24, 9, 25, 26, 27, 13, 14, 15, 16,
 ];
 export const NAMES = [
   "Hello, operator",
@@ -173,7 +195,7 @@ export function validateSession(s) {
     !num(s.drive, 0, 24) ||
     !int(s.sound, 0, 15) ||
     !int(s.pattern, 0, 15) ||
-    !int(s.voice, 0, 7) ||
+    !int(s.voice, 0, VOICES.length - 1) ||
     !int(s.drumHit, 0, 15) ||
     !int(s.key, 0, 11) ||
     !int(s.scale, 0, SCALES.length - 1) ||
@@ -204,7 +226,7 @@ export function validateSession(s) {
       !p ||
       p.steps?.length !== 16 ||
       p.effects?.length !== 16 ||
-      !p.effects.every((e) => int(e, 9, 16))
+      !p.effects.every((e) => int(e, 9, 9 + EFFECTS.length - 1))
     )
       throw Error("Invalid pattern.");
     for (const step of p.steps) {
@@ -213,7 +235,8 @@ export function validateSession(s) {
         step.voice &&
         (!int(step.voice.slot, 0, 14) ||
           !num(step.voice.note, -24, 72) ||
-          (step.voice.voice !== null && !int(step.voice.voice, 0, 7)) ||
+          (step.voice.voice !== null &&
+            !int(step.voice.voice, 0, VOICES.length - 1)) ||
           (step.voice.params !== null && !validParams(step.voice.params)))
       )
         throw Error("Invalid voice step.");

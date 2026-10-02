@@ -225,6 +225,8 @@ export function renderVocal(sample, params, voice, note = 0, reverse = false) {
   const start = Math.floor(params.start * sample.data.length);
   const source = sample.data.subarray(start);
   let pitch = params.pitch + note;
+  if (voice === 8) pitch += 12;
+  if (voice === 9) pitch -= 12;
   if (voice === 1) pitch = Math.round(pitch);
   let ratio = 2 ** (pitch / 12);
   if (voice === 1) {
@@ -268,6 +270,18 @@ export function renderVocal(sample, params, voice, note = 0, reverse = false) {
     for (let i = 0; i < length; i++)
       filtered[i] = out[i] * 0.3 + (a[i] + b[i] + c[i]) * 0.9;
   }
+  if (voice === 10 || voice === 12)
+    filtered = bandpass(filtered, rate, voice === 10 ? 1400 : 1900, 0.65);
+  if (voice === 15) {
+    const low = new Float32Array(length);
+    let value = 0;
+    const a = 1 - Math.exp((-2 * Math.PI * 650) / rate);
+    for (let i = 0; i < length; i++) {
+      value += a * (filtered[i] - value);
+      low[i] = value;
+    }
+    filtered = low;
+  }
   const f0 = 130 * ratio;
   let envelope = 0,
     held = 0;
@@ -306,7 +320,31 @@ export function renderVocal(sample, params, voice, note = 0, reverse = false) {
           v = x * 0.65 + read(filtered, i * 1.4983) * 0.5;
           break;
         case 7:
-          v = (2 * ((t * f0) % 1) - 1) * envelope * 2.2;
+          v =
+            x * 0.65 +
+            read(
+              filtered,
+              i - rate * (0.018 + 0.004 * Math.sin(t * 2 * Math.PI * 0.8)),
+            ) *
+              0.55;
+          break;
+        case 10:
+          v = x;
+          break;
+        case 11:
+          v = noise() * envelope * 2 + x * 0.12;
+          break;
+        case 12:
+          v = Math.tanh(x * 5) * 0.65;
+          break;
+        case 13:
+          v = x * Math.sin(2 * Math.PI * 95 * t + 2 * Math.sin(t * 17));
+          break;
+        case 14:
+          v = x * 0.65 + read(filtered, i - rate * 0.035) * 0.65;
+          break;
+        case 15:
+          v = x * (0.65 + 0.35 * Math.sin(t * 2 * Math.PI * 5));
           break;
       }
       result[i] = v;
@@ -348,6 +386,29 @@ export function toWav(channels, rate) {
       v.setInt16(44 + (i * count + c) * 2, x < 0 ? x * 32768 : x * 32767, true);
     }
   return buf;
+}
+function resampleKO(source, ratio) {
+  const out = new Float32Array(Math.max(1, Math.floor(source.length / ratio)));
+  for (let i = 0; i < out.length; i++) out[i] = read(source, i * ratio);
+  return out;
+}
+export function renderKOEffect(sample, effect) {
+  const { data, rate } = sample;
+  const out = new Float32Array(data.length);
+  for (let i = 0; i < out.length; i++) {
+    const t = i / rate;
+    if (effect === 21 || effect === 22) {
+      const ratio = effect === 22 ? 0.5 : 1.008;
+      out[i] = data[i] * 0.6 + read(data, i * ratio - rate * 0.012) * 0.6;
+    } else if (effect === 26 || effect === 27) {
+      const cycle = effect === 27 ? 0.075 : 0.18;
+      const position = (t % cycle) / cycle;
+      const triangle = position < 0.5 ? position * 2 : (1 - position) * 2;
+      const start = Math.floor(t / cycle) * cycle * rate;
+      out[i] = read(data, start + triangle * cycle * rate) * 0.9;
+    } else out[i] = data[i];
+  }
+  return { rate, data: out };
 }
 export class Engine {
   constructor(context = null) {
@@ -476,6 +537,7 @@ export class Engine {
     when,
     duration = null,
     reverse = false,
+    effect = 16,
   ) {
     const key =
       channel === "voice"
@@ -496,6 +558,8 @@ export class Engine {
         this.cache.set(key, rendered);
       }
     }
+    if ([21, 22, 26, 27].includes(effect))
+      rendered = renderKOEffect(rendered, effect);
     const s = this.ctx.createBufferSource(),
       g = this.ctx.createGain();
     s.buffer = this.buffer(rendered);
@@ -528,6 +592,8 @@ export class Engine {
     let count = event.multiplier || 1;
     if (fx === 14) count = Math.max(count, 2);
     if (fx === 9) count = Math.max(count, 4);
+    const repeats = { 17: 16, 18: 12, 19: 8, 20: 32, 25: 3 };
+    if (repeats[fx]) count = Math.max(count, repeats[fx]);
     if (fx === 12)
       count = Math.max(
         count,
@@ -541,6 +607,8 @@ export class Engine {
           s = state.samples[e.slot];
         if (s) {
           const p = { ...params };
+          if (fx === 23) p.pitch += 12;
+          if (fx === 24) p.pitch -= 12;
           if (fx === 11) {
             p.pitch -= 12;
             p.speed *= 0.5;
@@ -555,6 +623,7 @@ export class Engine {
             t,
             fx === 10 ? stepDuration * 0.45 : limit,
             fx === 15,
+            fx,
           );
         }
       }
@@ -563,8 +632,14 @@ export class Engine {
         const sample =
           state.drumSamples[hit] ||
           drumSample(hit, state.drumParams.pitch, state.drumParams.morph);
+        const pitchedSample = [23, 24].includes(fx)
+          ? {
+              rate: sample.rate,
+              data: resampleKO(sample.data, fx === 23 ? 2 : 0.5),
+            }
+          : sample;
         this.play(
-          sample,
+          pitchedSample,
           null,
           0,
           0,
@@ -572,6 +647,7 @@ export class Engine {
           t,
           fx === 10 ? stepDuration * 0.45 : limit,
           fx === 15,
+          fx,
         );
       }
     }

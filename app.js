@@ -1,6 +1,7 @@
 import {
   VOICES,
   EFFECTS,
+  KO_EFFECTS,
   NAMES,
   DRUMS,
   SCALES,
@@ -44,6 +45,7 @@ const engine = new Engine();
 let tabName = "sounds",
   writeMode = false,
   bank = 0,
+  fxBank = "voice",
   held = new Set(),
   consumed = new Set(),
   latched = false,
@@ -176,6 +178,8 @@ for (let i = 1; i <= 16; i++) {
   $("#screenSteps").insertAdjacentHTML("beforeend", "<i></i>");
 }
 function update() {
+  $("#padLegendA").textContent = fxBank === "ko" ? "K.O. EFFECTS" : "VOICE 1–8";
+  $("#padLegendB").textContent = fxBank === "ko" ? "PADS 1–16" : "EFFECT 9–16";
   $("#masterVolume").value = state.volume;
   $("#masterDrive").value = state.drive ?? 0;
   $("#masterVolumeValue").textContent = state.volume + " / 16";
@@ -233,6 +237,14 @@ function update() {
     if (c === "play") b.firstChild.textContent = playing ? "■ stop" : "▶ play";
   });
   $$(".pad").forEach((b, i) => {
+    b.querySelector(".pad-label").textContent =
+      fxBank === "ko"
+        ? KO_EFFECTS[i] === 9
+          ? "stutter 4"
+          : EFFECTS[KO_EFFECTS[i] - 9]
+        : i < 8
+          ? VOICES[i]
+          : EFFECTS[i - 8];
     const step = p.steps[i];
     const on = held.has("pattern")
       ? i === state.pattern
@@ -461,23 +473,20 @@ engine.onInputLevel = (level) => {
 };
 async function audition(note = lastNote) {
   if (!(await enableAudio())) return;
-  if (state.sound === 15) {
-    const s =
-      state.drumSamples[state.drumHit] ||
-      drumSample(state.drumHit, state.drumParams.pitch, state.drumParams.morph);
-    engine.play(s, null, 0, 0, "drum", engine.ctx.currentTime);
-  } else
-    engine.play(
-      state.samples[state.sound],
-      state.params[state.sound],
-      state.voice,
-      note + state.key,
-      "voice",
-      engine.ctx.currentTime,
-      null,
-      liveFx === 15,
-    );
+  const event = { multiplier: 1, voice: null, drum: null };
+  if (state.sound === 15) event.drum = { hit: state.drumHit };
+  else
+    event.voice = { slot: state.sound, note, params: null, voice: state.voice };
+  engine.trigger(
+    state,
+    event,
+    liveFx,
+    engine.ctx.currentTime,
+    60 / state.bpm / 4,
+    barCount,
+  );
 }
+
 function mark(...controls) {
   controls.forEach((c) => consumed.add(c));
 }
@@ -648,7 +657,7 @@ function padDown(n) {
   if (held.has("fx")) {
     mark("fx");
     if (locked()) return;
-    if (n <= 8) {
+    if (n <= 8 && fxBank === "voice") {
       state.voice = i;
       if (writeMode && playing) {
         const st =
@@ -658,19 +667,20 @@ function padDown(n) {
       message(VOICES[i]);
       changed();
     } else {
-      liveFx = n;
+      const effect = fxBank === "ko" ? KO_EFFECTS[i] : n;
+      liveFx = effect;
       if (writeMode) {
         const step = playing ? Math.max(0, displayStep) : selectedStep;
-        state.patterns[state.pattern].effects[step] = n;
+        state.patterns[state.pattern].effects[step] = effect;
         changed();
       }
-      if (n === 14 && playing) {
+      if (effect === 14 && playing) {
         nextStep = 0;
         nextTime = engine.ctx.currentTime + 0.01;
         engine.stop();
         timeline = [];
       }
-      message(EFFECTS[n - 9]);
+      message(EFFECTS[effect - 9]);
     }
     return;
   }
@@ -1019,7 +1029,7 @@ function renderWorkspace() {
   );
   const container = $("#workspaceContent");
   if (tabName === "sounds") {
-    container.innerHTML = `<div class="panel-title">SOUND BANK <span>15 VOICES + DRUMS</span></div><div class="sound-list">${[...state.samples, { name: "Tonic drum bank" }].map((s, i) => `<button class="sound-item ${i === state.sound ? "selected" : ""}" data-sound="${i}"><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="name">${esc(s.name)}</span>${miniWave(i)}<span class="duration">${i === 15 ? "16 hits" : (s.data.length / s.rate).toFixed(1) + "s"}</span></button>`).join("")}</div><div class="panel-buttons"><button class="secondary ${engine.recording ? "orange" : ""}" id="recordVoice">${engine.recording ? "Stop recording" : "Record voice"}</button><button class="secondary" id="importAudio">Import audio</button><button class="secondary" id="previewSound">Audition</button></div><p class="helper">${state.sound === 15 ? "Select a drum with a pad. Import audio replaces that hit." : `Slot ${state.sound + 1} · up to 8 seconds. Recording replaces this sound.`}</p>${state.sound < 15 ? `<div class="panel-title">VOICE CHARACTER</div><div class="voice-tags">${VOICES.map((v, i) => `<button data-voice="${i}" class="${state.voice === i ? "selected" : ""}">${v}</button>`).join("")}</div><div class="input-row"><label for="soundName">Sound name</label><input id="soundName" class="name-input" style="width:160px" maxlength="80" value="${esc(state.samples[state.sound].name)}"></div>` : `<div class="pattern-grid">${DRUMS.map((d, i) => `<button data-hit="${i}" class="${i === state.drumHit ? "selected" : ""}">${esc(d)}</button>`).join("")}</div>`}<div class="panel-section"><div class="panel-title">INPUT SOURCE <span>LOCAL AUDIO ONLY</span></div><select id="inputDevice" aria-label="Input device" style="width:100%"><option value="">Default microphone / audio input</option>${deviceOptions}</select><button class="text-button" id="listDevices">Choose connected input</button><p class="helper">Use an audio interface input for line-in recording. No live monitoring, so your speakers won’t feed back.</p></div>`;
+    container.innerHTML = `<div class="panel-title">FX PAD BANK</div><select id="fxBank" aria-label="Effects pad bank"><option value="voice">Voice + original effects</option><option value="ko">K.O. · 16 performance effects</option></select><p class="helper">Hold FX + a pad. WRITE saves the effect to the pattern. Extra voice characters are below.</p><div class="panel-title">SOUND BANK <span>15 VOICES + DRUMS</span></div><div class="sound-list">${[...state.samples, { name: "Tonic drum bank" }].map((s, i) => `<button class="sound-item ${i === state.sound ? "selected" : ""}" data-sound="${i}"><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="name">${esc(s.name)}</span>${miniWave(i)}<span class="duration">${i === 15 ? "16 hits" : (s.data.length / s.rate).toFixed(1) + "s"}</span></button>`).join("")}</div><div class="panel-buttons"><button class="secondary ${engine.recording ? "orange" : ""}" id="recordVoice">${engine.recording ? "Stop recording" : "Record voice"}</button><button class="secondary" id="importAudio">Import audio</button><button class="secondary" id="previewSound">Audition</button></div><p class="helper">${state.sound === 15 ? "Select a drum with a pad. Import audio replaces that hit." : `Slot ${state.sound + 1} · up to 8 seconds. Recording replaces this sound.`}</p>${state.sound < 15 ? `<div class="panel-title">VOICE CHARACTER</div><div class="voice-tags">${VOICES.map((v, i) => `<button data-voice="${i}" class="${state.voice === i ? "selected" : ""}">${v}</button>`).join("")}</div><div class="input-row"><label for="soundName">Sound name</label><input id="soundName" class="name-input" style="width:160px" maxlength="80" value="${esc(state.samples[state.sound].name)}"></div>` : `<div class="pattern-grid">${DRUMS.map((d, i) => `<button data-hit="${i}" class="${i === state.drumHit ? "selected" : ""}">${esc(d)}</button>`).join("")}</div>`}<div class="panel-section"><div class="panel-title">INPUT SOURCE <span>LOCAL AUDIO ONLY</span></div><select id="inputDevice" aria-label="Input device" style="width:100%"><option value="">Default microphone / audio input</option>${deviceOptions}</select><button class="text-button" id="listDevices">Choose connected input</button><p class="helper">Use an audio interface input for line-in recording. No live monitoring, so your speakers won’t feed back.</p></div>`;
     $$("[data-sound]").forEach(
       (b) =>
         (b.onclick = () => {
@@ -1039,12 +1049,25 @@ function renderWorkspace() {
       pendingImport = state.sound === 15 ? "drum" : "voice";
       $("#audioFile").click();
     };
+    $("#fxBank").value = fxBank;
+    $("#fxBank").onchange = (e) => {
+      fxBank = e.target.value;
+      liveFx = 16;
+      update();
+    };
     $("#previewSound").onclick = () => audition();
     $$("[data-voice]").forEach(
       (b) =>
         (b.onclick = () => {
           if (locked()) return;
           state.voice = +b.dataset.voice;
+          if (writeMode) {
+            const step =
+              state.patterns[state.pattern].steps[
+                playing ? Math.max(0, displayStep) : selectedStep
+              ];
+            if (step.voice) step.voice.voice = state.voice;
+          }
           changed();
         }),
     );
