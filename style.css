@@ -1079,3 +1079,29 @@ details summary {
   text-underline-offset: 3px;
   overflow-wrap: anywhere;
 }
+
+.output-controls {
+  margin: 22px 0;
+  padding: 18px;
+  border: 1px solid #373c3a;
+  border-radius: 14px;
+}
+.output-controls label {
+  display: flex;
+  justify-content: space-between;
+  font:
+    12px "DM Mono",
+    monospace;
+  margin: 8px 0;
+}
+.output-controls input {
+  width: 100%;
+  accent-color: #f88b54;
+  cursor: pointer;
+}
+.output-controls p {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.65;
+  margin: 12px 0 0;
+}

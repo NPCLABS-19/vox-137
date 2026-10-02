@@ -141,11 +141,23 @@ function changed(render = true) {
   update();
   if (render) renderWorkspace();
 }
+for (const [id, key, setter] of [
+  ["masterVolume", "volume", "setVolume"],
+  ["masterDrive", "drive", "setDrive"],
+]) {
+  $("#" + id).oninput = (e) => {
+    if (locked()) return;
+    state[key] = +e.target.value;
+    engine[setter](state[key]);
+    changed();
+  };
+}
 async function enableAudio() {
   try {
     await engine.init();
     await engine.ctx.resume();
     engine.setVolume(state.volume);
+    engine.setDrive(state.drive);
     engine.setSync(state.sync);
     engine.setMonitor(state.monitorInput);
     $("#audioStart").textContent = "Sound enabled ◉";
@@ -164,6 +176,11 @@ for (let i = 1; i <= 16; i++) {
   $("#screenSteps").insertAdjacentHTML("beforeend", "<i></i>");
 }
 function update() {
+  $("#masterVolume").value = state.volume;
+  $("#masterDrive").value = state.drive ?? 0;
+  $("#masterVolumeValue").textContent = state.volume + " / 16";
+  $("#masterDriveValue").textContent = (state.drive ?? 0) + " dB";
+
   const p = state.patterns[state.pattern];
   $("#bpmRead").textContent = Math.round(state.bpm);
   $("#soundRead").textContent = String(state.sound + 1).padStart(2, "0");
@@ -1134,6 +1151,7 @@ function renderWorkspace() {
     $("#volume").oninput = (e) => {
       state.volume = +e.target.value;
       engine.setVolume(state.volume);
+      engine.setDrive(state.drive);
       changed(false);
     };
     $("#clock").onchange = (e) => {
@@ -1378,6 +1396,7 @@ $("#sessionFile").onchange = async (e) => {
     state = restored;
     engine.cache.clear();
     engine.setVolume(state.volume);
+    engine.setDrive(state.drive);
     engine.setSync(state.sync);
     engine.setMonitor(state.monitorInput);
     receiveMode = false;
@@ -1420,6 +1439,7 @@ async function renderSong() {
     const offline = new Engine(ctx);
     offline.connectGraph();
     offline.setVolume(snapshot.volume);
+    offline.setDrive(snapshot.drive);
     let t = 0;
     for (let bar = 0; bar < chain.length; bar++) {
       snapshot.pattern = chain[bar];
@@ -1471,6 +1491,7 @@ async function resetSession(demo) {
   writeMode = false;
   engine.cache.clear();
   engine.setVolume(state.volume);
+  engine.setDrive(state.drive);
   engine.setSync(state.sync);
   engine.setMonitor(state.monitorInput);
   changed();

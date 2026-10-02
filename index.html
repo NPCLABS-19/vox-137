@@ -36,6 +36,27 @@
             Enable sound <span>◉</span></button
           ><span id="audioStatus">Sound starts with your first touch.</span>
         </div>
+        <div class="output-controls">
+          <label for="masterVolume"
+            >VOLUME <output id="masterVolumeValue">5 / 16</output></label
+          >
+          <input id="masterVolume" type="range" min="1" max="16" value="5" />
+          <label for="masterDrive"
+            >DRIVE <output id="masterDriveValue">0 dB</output></label
+          >
+          <input
+            id="masterDrive"
+            type="range"
+            min="0"
+            max="24"
+            step="1"
+            value="0"
+          />
+          <p>
+            Drive boosts quiet sounds and adds saturation. Volume sets the
+            output level.
+          </p>
+        </div>
         <div class="quickstart">
           <b>YOUR FIRST LOOP</b>
           <p><kbd>PLAY</kbd> Hear the loaded pattern.</p>
