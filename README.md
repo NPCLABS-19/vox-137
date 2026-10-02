@@ -33,7 +33,7 @@ Hold Shift+S/P/B/M/R/F/W for Sound/Pattern/BPM/M/Record/FX/Write. Space starts/s
 - Eight recreated voice characters, pitch/formant and independent start/speed controls, two monophonic lanes (one vocal, one drum).
 - 16 × 16-step patterns, live quantized note entry, per-step parameter/voice locks, up to 16 repeats per step, copy/clear, 64-entry pattern chains.
 - Seven recreated performance effects, with per-step effect recording and clearing. Triplet quantization, stutter/build-up repeats, gating, half-speed, live pattern restart, and reversal.
-- 60–240 BPM, swing, selectable key/scales, 16 volume levels, compressor limiting.
+- 60–240 BPM, swing, selectable key/scales, visible master volume and 0–24 dB drive with soft saturation and compressor limiting. Both controls apply to playback and WAV exports.
 - Local session persistence, versioned JSON backup/restore, VOX-specific lossless stereo data WAV backup/restore.
 - Stereo WAV loop/chain rendering with tail, live performance capture with a five-minute limit, audio preview and download links.
 - Clock setting, alarm pattern, idle auto-sleep, reversible session lock, factory reset.

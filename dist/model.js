@@ -107,6 +107,7 @@ export function createState() {
     bpm: 120,
     swing: 0,
     volume: 5,
+    drive: 0,
     sound: 0,
     pattern: 0,
     voice: 0,
@@ -160,6 +161,7 @@ export function validateSession(s) {
   if (!s || s.version !== 1 || typeof s.name !== "string" || s.name.length > 80)
     throw Error("Not a valid VOX session.");
   s.monitorInput ??= false;
+  s.drive ??= 0;
   if (typeof s.monitorInput !== "boolean")
     throw Error("Invalid input monitoring setting.");
   const int = (v, a, b) => Number.isInteger(v) && v >= a && v <= b;
@@ -168,6 +170,7 @@ export function validateSession(s) {
     !num(s.bpm, 60, 240) ||
     !num(s.swing, 0, 0.5) ||
     !int(s.volume, 1, 16) ||
+    !num(s.drive, 0, 24) ||
     !int(s.sound, 0, 15) ||
     !int(s.pattern, 0, 15) ||
     !int(s.voice, 0, 7) ||

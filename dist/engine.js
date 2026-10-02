@@ -381,7 +381,12 @@ export class Engine {
   }
   connectGraph() {
     const c = this.ctx;
+    this.driveGain = c.createGain();
+    this.saturation = c.createWaveShaper();
+    this.saturation.oversample = "2x";
+    this.driveGain.connect(this.saturation);
     this.master = c.createGain();
+    this.saturation.connect(this.master);
     this.master.gain.value = 0.35;
     this.limiter = c.createDynamicsCompressor();
     this.limiter.threshold.value = -3;
@@ -397,6 +402,24 @@ export class Engine {
     this.limiter.connect(this.output, 0, 0);
     this.limiter.connect(this.output, 0, 1);
     this.output.connect(c.destination);
+  }
+  setDrive(db = 0) {
+    if (!this.ctx) return;
+    this.driveGain.gain.setTargetAtTime(
+      10 ** (db / 20),
+      this.ctx.currentTime,
+      0.015,
+    );
+    if (db === 0) {
+      this.saturation.curve = null;
+      return;
+    }
+    const curve = new Float32Array(4097);
+    for (let i = 0; i < curve.length; i++) {
+      const x = (i / (curve.length - 1)) * 2 - 1;
+      curve[i] = Math.tanh(x * 1.5) / Math.tanh(1.5);
+    }
+    this.saturation.curve = curve;
   }
   setVolume(v) {
     if (this.ctx)
@@ -477,7 +500,7 @@ export class Engine {
       g = this.ctx.createGain();
     s.buffer = this.buffer(rendered);
     s.connect(g);
-    g.connect(this.master);
+    g.connect(this.driveGain);
     when = Math.max(this.ctx.currentTime, when);
     const old = this.active[channel];
     if (old) {
@@ -590,7 +613,7 @@ export class Engine {
       this.inputMonitor.gain.value = 0;
       this.input.connect(this.inputSplitter);
       this.inputSplitter.connect(this.inputMonitor, 1, 0);
-      this.inputMonitor.connect(this.master);
+      this.inputMonitor.connect(this.driveGain);
       this.setMonitor(this.monitorEnabled);
       const silent = this.ctx.createGain();
       silent.gain.value = 0;
