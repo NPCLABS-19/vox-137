@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {Engine} from '../dist/engine.js';
+import {Engine,starterSample} from '../dist/engine.js';
 import {createState,validateSession} from '../dist/model.js';
 const engine = new Engine();
 let gain,volume;
@@ -21,6 +21,7 @@ assert.equal(volume,.9);
 engine.setVolume(1);
 assert.ok(volume<.05);
 const state=createState();
+state.samples=Array.from({length:15},(_,i)=>starterSample(i));
 delete state.drive;
 validateSession(state);
 assert.equal(state.drive,0);
