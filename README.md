@@ -30,9 +30,9 @@ Hold Shift+S/P/B/M/R/F/W for Sound/Pattern/BPM/M/Record/FX/Write. Space starts/s
 ## Implemented
 
 - 15 voice slots × 8 seconds, microphone/audio-interface recording, mono audio file import; 16 original synthesized drum hits in slot 16, with individual imported replacements.
-- Eight recreated voice characters, pitch/formant and independent start/speed controls, two monophonic lanes (one vocal, one drum).
+- Sixteen recreated voice characters (Synth removed; Chorus, Chipmunk, Giant, Telephone, Whisper, Megaphone, Alien, Double and Underwater added), pitch/formant and independent start/speed controls, two monophonic lanes (one vocal, one drum).
 - 16 × 16-step patterns, live quantized note entry, per-step parameter/voice locks, up to 16 repeats per step, copy/clear, 64-entry pattern chains.
-- Seven recreated performance effects, with per-step effect recording and clearing. Triplet quantization, stutter/build-up repeats, gating, half-speed, live pattern restart, and reversal.
+- Original performance effects plus a PO-33 K.O. bank (loop variants, unison, octave shifts, stutter and scratch), with per-step effect recording and clearing. Triplet quantization, stutter/build-up repeats, gating, half-speed, live pattern restart, and reversal.
 - 60–240 BPM, swing, selectable key/scales, visible master volume and 0–24 dB drive with soft saturation and compressor limiting. Both controls apply to playback and WAV exports.
 - Local session persistence, versioned JSON backup/restore, VOX-specific lossless stereo data WAV backup/restore.
 - Stereo WAV loop/chain rendering with tail, live performance capture with a five-minute limit, audio preview and download links.
@@ -46,7 +46,9 @@ This is a functional browser reinterpretation, not a firmware emulation. Teenage
 
 Physical voltage, battery state, circuit-board tabs, hardware speaker/case and analog jack detection cannot be emulated in a web page. Lock and battery-status combinations have explicit browser equivalents. M+pad cycles the repeat count, and a step inspector permits direct entry. Browser scheduling, suspended tabs and permission prompts differ from hardware. Alarms require the page to remain open and audio enabled. Audio clock sync is best-effort, not voltage-calibrated hardware clock. SY4/SY5 detect clock on the input's left channel and optionally pass the right-channel audio through when the Session monitoring checkbox is enabled. Monitoring is muted while recording a vocal. The audio interface must expose an input device to the browser.
 
-Starter recordings are original text synthesized using the system Samantha voice. No Rick and Morty samples, firmware, logos or animations are included. The design and branding are original.
+Starter recordings are original text synthesized using the system Samantha voice. No Rick and Morty samples, firmware, logos or animations are included. The design and branding are original. The clear shell exposes an illustrated circuit board, traces, chips, capacitors and colored wires.
+
+The K.O. bank is based on the [official PO-33 effects list](https://teenage.engineering/guides/po-33/en). Select it under Sound Bank, then hold FX + a pad. Effects can also be selected per step in the Pattern inspector. The loop and scratch DSP are browser approximations. Existing Synth locks use Chorus in the new version.
 
 ## Verification
 
